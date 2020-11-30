@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import firebase from "../services/firebase"
+import auth from "../services/firebase-auth"
 
 let storage = firebase.storage()
 let storageRef = storage.ref("images/")
@@ -56,10 +57,13 @@ export default function ImageForm() {
       let imageRef = storageRef.child(filename)
       await imageRef.put(image)
       const imageUrl = await imageRef.getDownloadURL()
-      const newKey = (await database.ref("/users/" + "meng").push()).key
-      await database.ref("/users/" + "meng").update({
+      const newKey = (
+        await database.ref("/users/" + auth.currentUser.uid).push()
+      ).key
+      await database.ref("/users/" + auth.currentUser.uid).update({
         [newKey]: {
           ...post,
+          day: new Date(),
           imgUrl: imageUrl,
         },
       })
@@ -69,6 +73,7 @@ export default function ImageForm() {
   }
   return (
     <div>
+      {console.log(auth.currentUser.email)}
       <input type="file" onChange={selectImage}></input>
       <img src={showImage} width="300px" height="200px" alt="" />
       <button type="button" onClick={upload}>
